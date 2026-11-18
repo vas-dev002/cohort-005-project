@@ -267,15 +267,17 @@ else
     if out=$(WF="$wf" node --env-file="$ENV_FILE" --input-type=module -e '
         import Knock from "@knocklabs/node";
         const k = new Knock({ apiKey: process.env.KNOCK_SECRET_API_KEY });
+        try {
         const r = await k.workflows.trigger(process.env.WF, {
           recipients: [{ id: "wizard-check", name: "Wizard check" }],
           data: { replier_name: "Wizard", reply_excerpt: "check", url: "/",
                   student_name: "Wizard", course_title: "check" },
         });
-        console.log(r.workflow_run_id);' 2>&1); then
+        console.log(r.workflow_run_id);
+        } catch (e) { console.log(e.message); process.exit(1); }' 2>&1); then
       printf '  %s✓%s %s triggered (run %s)\n' "$GREEN" "$RESET" "$wf" "$out"
     else
-      warn "$wf failed: $(printf '%s' "$out" | grep -m1 -E 'Error|404' || printf '%s' "$out" | tail -n1)"
+      warn "$wf failed: $out"
       SKIPPED+=("fix workflow $wf, then re-run this wizard")
     fi
   done
