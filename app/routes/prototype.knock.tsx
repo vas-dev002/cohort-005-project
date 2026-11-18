@@ -102,7 +102,7 @@ export async function action({ request }: Route.ActionArgs) {
         .where(eq(lessons.id, question.lessonId))
         .get();
       const result = await triggerDiscussionReply({
-        questionAuthorId: question.userId,
+        questionAuthor: db.select().from(users).where(eq(users.id, question.userId)).get()!,
         replierId: me.id,
         replierName: me.name,
         lessonId: question.lessonId,
@@ -119,7 +119,7 @@ export async function action({ request }: Route.ActionArgs) {
 
     if (intent === "enrollment") {
       const result = await triggerNewEnrollment({
-        instructorId: me.id,
+        instructor: me,
         studentName: "Prototype Student",
         courseTitle: "Prototype Course",
       });

@@ -44,8 +44,13 @@ export async function identifyKnockUser(user: {
   });
 }
 
+type Recipient = { id: number; name: string; email: string };
+// Inline-identify: Knock silently drops a trigger for a user id it has never
+// seen, so always send the recipient's profile with the trigger.
+const inline = (r: Recipient) => ({ id: String(r.id), name: r.name, email: r.email });
+
 export async function triggerDiscussionReply(args: {
-  questionAuthorId: number;
+  questionAuthor: Recipient;
   replierId: number;
   replierName: string;
   lessonId: number;
@@ -55,7 +60,7 @@ export async function triggerDiscussionReply(args: {
   url: string;
 }) {
   return knock().workflows.trigger(KNOCK_WORKFLOWS.discussionReply, {
-    recipients: [String(args.questionAuthorId)],
+    recipients: [inline(args.questionAuthor)],
     actor: String(args.replierId),
     data: {
       replier_name: args.replierName,
@@ -69,12 +74,12 @@ export async function triggerDiscussionReply(args: {
 }
 
 export async function triggerNewEnrollment(args: {
-  instructorId: number;
+  instructor: Recipient;
   studentName: string;
   courseTitle: string;
 }) {
   return knock().workflows.trigger(KNOCK_WORKFLOWS.newEnrollment, {
-    recipients: [String(args.instructorId)],
+    recipients: [inline(args.instructor)],
     data: {
       student_name: args.studentName,
       course_title: args.courseTitle,
